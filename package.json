@@ -1,0 +1,15 @@
+{
+  "name": "authid-core-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./build/index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "base64url": "^3.0.0",
+  }
+}
