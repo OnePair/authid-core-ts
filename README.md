@@ -97,7 +97,7 @@ try {
 	console.log("Is the jwt valid?", verified);
 } catch(err) {
 	console.log("JWT is invalid!");
-    console.log(err);
+	console.log(err);
 }
 
 
