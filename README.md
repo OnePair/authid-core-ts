@@ -4,7 +4,7 @@
 > An AuthID reference implementation in typescript.
 
 
-AuthID is a protocol that allows for platform independent decentralized identifiers to be used for digital signatures and authentication. An AuthID decentralized identifier can either be a straight up [DID](https://w3c-ccg.github.io/did-spec/), or a human meaningful identifier that points to a one.
+AuthID is a protocol that allows for platform independent decentralized identifiers to be used for digital signatures and authentication. An AuthID decentralized identifier can either be a straight up [DID](https://w3c-ccg.github.io/did-spec/), or a human meaningful identifier that points to one.
 
 ## Api
 
