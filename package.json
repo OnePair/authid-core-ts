@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^10.12.18",
     "base64url": "^3.0.0"
   }
 }
