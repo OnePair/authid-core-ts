@@ -73,6 +73,8 @@ const password = "password123";
 let address = await autID.getAddress(protocol, password);
 console.log("address:", address);
 
+// Geth console: eth.sendTransaction({from:eth.accounts[0], to:address, value: web3.toWei(5, "ether")})
+
 // 2) Register a DID
 
 let did = await authID.registerDID(protocol, password);
