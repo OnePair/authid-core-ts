@@ -49,7 +49,8 @@ export class AuthID {
   * @param {string} password The wallet password.
   * @param {string} did The did
   */
-  importDID(protocol: string, password: string, did: string): Promise<void> {
+  importDID(password: string, did: string): Promise<void> {
+    let protocol = this.getProtocolFromId(did);
     return this.getDriver(protocol).importDID(password, did);
   }
 
