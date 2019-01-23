@@ -22,8 +22,9 @@ export interface AuthIDDriver {
   * Import a DID.
   *
   * @param {string} password The wallet password.
+  * @param {string} password The wallet password.
   */
-  importDID(did: string): Promise<void>;
+  importDID(password: string, did: string): Promise<void>;
 
   /*
   * Authorize a processor.
