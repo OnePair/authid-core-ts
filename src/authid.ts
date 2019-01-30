@@ -136,10 +136,12 @@ export class AuthID {
   /*
   * Get the wallet's public keys.
   *
+  * @param {string} password The wallet password.
+  *
   * @return {Promise<object>} The keys.
   */
-  getPublicKeys(protocol: string): Promise<object> {
-    return this.getDriver(protocol).getPublicKeys();
+  getPublicKeys(protocol: string, password: string): Promise<object> {
+    return this.getDriver(protocol).getPublicKeys(password);
   }
 
   public getProtocolFromId(id: string): string {

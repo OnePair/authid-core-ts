@@ -90,9 +90,11 @@ export interface AuthIDDriver {
   /*
   * Get the wallet's public keys.
   *
+  * @param {string} password The wallet password.
+  *
   * @return {Promise<object>} The keys.
   */
-  getPublicKeys(): Promise<object>;
+  getPublicKeys(password: string): Promise<object>;
 
   /*
   * Initialize the driver
