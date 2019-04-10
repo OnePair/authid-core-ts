@@ -22,9 +22,27 @@ export interface AuthIDDriver {
   * Import a DID.
   *
   * @param {string} password The wallet password.
-  * @param {string} password The wallet password.
+  * @param {string} did The did to import.
   */
   importDID(password: string, did: string): Promise<void>;
+
+  /*
+  * Register a name.
+  *
+  * @param {string} password The wallet password.
+  * @param {string} name The name to register.
+  *
+  * @return {Promise<string>} The transaction address.
+  */
+  registerName(password: string, name: string): Promise<string>;
+
+  /*
+  * Import an already registered name.
+  *
+  * @param {string} password The wallet password.
+  * @param {string} name The name to import.
+  */
+  importName(name: string): Promise<void>;
 
   /*
   * Authorize a processor.
@@ -35,7 +53,7 @@ export interface AuthIDDriver {
   * @param {boolean} sig Permission for authentication.
   * @param {boolean} auth Permission for authentication.
   *
-  * @param {string} The processor token.
+  * @return {string} The processor token.
   */
   authorizeProcessor(password: string, processorId: string,
     publicKey: string, sig: boolean, auth: boolean): Promise<string>;

@@ -38,7 +38,7 @@ export class AuthID {
   *
   * @return {Promise<string>} The uri of the did.
   */
-  registerDID(protocol: string, password: string): Promise<string> {
+  public registerDID(protocol: string, password: string): Promise<string> {
     return this.getDriver(protocol).registerDID(password);
   }
 
@@ -49,9 +49,34 @@ export class AuthID {
   * @param {string} password The wallet password.
   * @param {string} did The did
   */
-  importDID(password: string, did: string): Promise<void> {
+  public importDID(password: string, did: string): Promise<void> {
     let protocol = this.getProtocolFromId(did);
     return this.getDriver(protocol).importDID(password, did);
+  }
+
+  /*
+  * Register a name.
+  *
+  * @param {string} protocol The driver protocol.
+  * @param {string} password The wallet password.
+  * @param {string} name The name to register.
+  *
+  * @return {Promise<string>} The transaction address.
+  */
+  public registerName(protocol: string,
+    password: string, name: string): Promise<string> {
+    return this.getDriver(protocol).registerName(password, name);
+  }
+
+  /*
+  * Import an already registered name.
+  *
+  * @param {string} password The wallet password.
+  * @param {string} name The name to import.
+  */
+  public importName(name: string): Promise<void> {
+    let protocol = this.getProtocolFromId(name);
+    return this.getDriver(protocol).importName(name);
   }
 
   /*
@@ -66,7 +91,7 @@ export class AuthID {
   *
   * @param {string} The processor token.
   */
-  authorizeProcessor(protocol: string, password: string, processorId: string,
+  public authorizeProcessor(protocol: string, password: string, processorId: string,
     publicKey: string, sig: boolean, auth: boolean): Promise<string> {
     return this.getDriver(protocol).authorizeProcessor(password, processorId, publicKey, sig, auth);
   }
@@ -80,7 +105,7 @@ export class AuthID {
   * @param {string} processorToken The processor token.
   * @param {string} privateKey The private key of the processor.
   */
-  importProcessor(protocol: string, password: string, processorId: string,
+  public importProcessor(protocol: string, password: string, processorId: string,
     processorToken: string, privateKey: string): Promise<void> {
     return this.getDriver(protocol).importProcessor(password, processorId, processorToken, privateKey);
   }
@@ -92,7 +117,7 @@ export class AuthID {
   * @param {string} password The wallet password.
   * @param {string} processorId The string used to identify the processor.
   */
-  revokeProcessor(protocol: string, password: string, processorId: string): Promise<void> {
+  public revokeProcessor(protocol: string, password: string, processorId: string): Promise<void> {
     return this.getDriver(protocol).revokeProcessor(password, processorId);
   }
 
@@ -106,7 +131,7 @@ export class AuthID {
   *
   * @return {Promise<string>} The jwt.
   */
-  createJwt(protocol: string, password: string, claims: object, expiresIn: string): Promise<string> {
+  public createJwt(protocol: string, password: string, claims: object, expiresIn: string): Promise<string> {
     return this.getDriver(protocol).createJwt(password, claims, expiresIn);
   }
 
@@ -118,7 +143,7 @@ export class AuthID {
   *
   * @return {Promis<object>} The verification result.
   */
-  verifyJwt(jwt: string, id: string): Promise<object> {
+  public verifyJwt(jwt: string, id: string): Promise<object> {
     let protocol = this.getProtocolFromId(id);
     return this.getDriver(protocol).verifyJwt(jwt, id);
   }
@@ -129,7 +154,7 @@ export class AuthID {
   * @param {string} protocol The registry protocol
   * @return {Promise<object>}
   */
-  getInfo(protocol: string): Promise<object> {
+  public getInfo(protocol: string): Promise<object> {
     return this.getDriver(protocol).getInfo();
   }
 
@@ -140,7 +165,7 @@ export class AuthID {
   *
   * @return {Promise<object>} The keys.
   */
-  getPublicKeys(protocol: string, password: string): Promise<object> {
+  public getPublicKeys(protocol: string, password: string): Promise<object> {
     return this.getDriver(protocol).getPublicKeys(password);
   }
 
