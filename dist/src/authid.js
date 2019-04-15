@@ -48,6 +48,28 @@ var AuthID = /** @class */ (function () {
         return this.getDriver(protocol).importDID(password, did);
     };
     /*
+    * Register a name.
+    *
+    * @param {string} protocol The driver protocol.
+    * @param {string} password The wallet password.
+    * @param {string} name The name to register.
+    *
+    * @return {Promise<string>} The transaction address.
+    */
+    AuthID.prototype.registerName = function (protocol, password, name) {
+        return this.getDriver(protocol).registerName(password, name);
+    };
+    /*
+    * Import an already registered name.
+    *
+    * @param {string} password The wallet password.
+    * @param {string} name The name to import.
+    */
+    AuthID.prototype.importName = function (name) {
+        var protocol = this.getProtocolFromId(name);
+        return this.getDriver(protocol).importName(name);
+    };
+    /*
     * Authorize a processor.
     *
     * @param {string} protocol The registry protocol.
