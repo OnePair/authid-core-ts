@@ -158,6 +158,13 @@ var AuthID = /** @class */ (function () {
                 throw new Error("DID method not found!");
             return this.didMethods[parsed.host.toUpperCase()];
         }
+        if (id.indexOf(".") > -1) {
+            var protocol = id.substring(id.lastIndexOf(".") + 1).toUpperCase();
+            ;
+            if (!(protocol in this.drivers))
+                throw new Error("Unsupported protocol!");
+            return protocol;
+        }
         throw new Error("Invalid ID!");
     };
     AuthID.prototype.getDriver = function (protocol) {

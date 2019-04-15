@@ -91,6 +91,7 @@ export class AuthID {
   *
   * @param {string} The processor token.
   */
+
   public authorizeProcessor(protocol: string, password: string, processorId: string,
     publicKey: string, sig: boolean, auth: boolean): Promise<string> {
     return this.getDriver(protocol).authorizeProcessor(password, processorId, publicKey, sig, auth);
@@ -178,6 +179,13 @@ export class AuthID {
       if (!(host in this.didMethods))
         throw new Error("DID method not found!");
       return this.didMethods[parsed.host.toUpperCase()];
+    }
+
+    if (id.indexOf(".") > -1) {
+      let protocol = id.substring(id.lastIndexOf(".") + 1).toUpperCase();;
+      if (!(protocol in this.drivers))
+        throw new Error("Unsupported protocol!");
+      return protocol;
     }
 
     throw new Error("Invalid ID!");
