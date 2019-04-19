@@ -12,6 +12,8 @@
   "dependencies": {
     "@types/node": "^10.12.18",
     "base64url": "^3.0.0",
+    "caching-map": "^1.0.2",
+    "jsonwebtoken": "^8.5.1",
     "tsify": "^4.0.1",
     "typescript": "^3.2.4"
   }

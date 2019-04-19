@@ -8,7 +8,11 @@ export interface AuthIDDriver {
     importProcessor(password: string, processorId: string, processorToken: string, privateKey: string): Promise<void>;
     revokeProcessor(password: string, processorId: string): Promise<void>;
     createJwt(password: string, claims: object, expiresIn: string): Promise<string>;
+    createJwt(password: string, claims: object, expiresIn: string, permission: string): Promise<string>;
+    createJwt(password: string, claims: object, expiresIn: string, permission?: string): Promise<string>;
     verifyJwt(jwt: string, id: string): Promise<object>;
+    verifyJwt(jwt: string, id: string, permission: string): Promise<object>;
+    verifyJwt(jwt: string, id: string, permission?: string): Promise<object>;
     getInfo(): Promise<object>;
     getPublicKeys(password: string): Promise<object>;
     init(): Promise<void>;

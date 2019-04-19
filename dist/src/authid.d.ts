@@ -2,6 +2,9 @@ import { AuthIDDriver } from "./authid-driver";
 export declare class AuthID {
     private drivers;
     private didMethods;
+    private challengeKey;
+    private authKey;
+    private authChallenges;
     constructor();
     setDriver(protocol: string, didMethod: string, authIDDriver: AuthIDDriver): void;
     getAddress(protocol: string, password: string): Promise<string>;
@@ -13,9 +16,15 @@ export declare class AuthID {
     importProcessor(protocol: string, password: string, processorId: string, processorToken: string, privateKey: string): Promise<void>;
     revokeProcessor(protocol: string, password: string, processorId: string): Promise<void>;
     createJwt(protocol: string, password: string, claims: object, expiresIn: string): Promise<string>;
+    createJwt(protocol: string, password: string, claims: object, expiresIn: string, permission: string): Promise<string>;
     verifyJwt(jwt: string, id: string): Promise<object>;
+    verifyJwt(jwt: string, id: string, permission: string): Promise<object>;
+    createAuthRequest(id: string): object;
+    signAuthRequest(password: string, authRequest: object): Promise<string>;
+    verifyAuthResponse(authResponse: string): Promise<object>;
     getInfo(protocol: string): Promise<object>;
     getPublicKeys(protocol: string, password: string): Promise<object>;
     getProtocolFromId(id: string): string;
     private getDriver;
+    private static generateECDH;
 }

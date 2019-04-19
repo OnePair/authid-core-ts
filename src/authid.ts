@@ -1,21 +1,34 @@
 import { AuthIDDriver } from "./authid-driver";
 
 import Url from "url";
+import Crypto from "crypto";
+import CachMap from "caching-map";
+import Jwt from "jsonwebtoken";
 
 const DID_PROTOCOL = "DID:";
+
+const DH_CURVE = "secp256k1"
+const NONCE_LENGTH = 32;
+const AUTH_EXPIRY = 10 * 60000; // 10 minutes
 
 export class AuthID {
   private drivers: object;
   private didMethods: object;
+  private challengeKey: any; // Diffie hellman key used for creating auth requests
+  private authKey: Crypto.ECDH; // Diffie hellman key used for auth response
+  private authChallenges: CachMap;
 
   constructor() {
     this.drivers = {}
     this.didMethods = {};
+    this.authChallenges = new CachMap(Infinity);
   }
 
   public setDriver(protocol: string, didMethod: string, authIDDriver: AuthIDDriver): void {
     this.drivers[protocol.toUpperCase()] = authIDDriver;
     this.didMethods[didMethod.toUpperCase()] = protocol;
+    this.challengeKey = AuthID.generateECDH();
+    this.authKey = AuthID.generateECDH();
   }
 
   /*
@@ -129,11 +142,18 @@ export class AuthID {
   * @param {string} password The wallet password.
   * @param {object} claims The claims for the jwt.
   * @param {string} expiresIn Expiry time.
+  * @param [string] permission
   *
   * @return {Promise<string>} The jwt.
   */
-  public createJwt(protocol: string, password: string, claims: object, expiresIn: string): Promise<string> {
-    return this.getDriver(protocol).createJwt(password, claims, expiresIn);
+  public createJwt(protocol: string, password: string, claims: object,
+    expiresIn: string): Promise<string>;
+  public createJwt(protocol: string, password: string, claims: object,
+    expiresIn: string, permission: string): Promise<string>;
+  public createJwt(protocol: string, password: string, claims: object,
+    expiresIn: string, permission?: string): Promise<string> {
+    return this.getDriver(protocol).createJwt(password, claims,
+      expiresIn, permission);
   }
 
   /*
@@ -141,12 +161,138 @@ export class AuthID {
   *
   * @param {string} jwt The json web token.
   * @param {string} id The id that signed the jwt.
+  * @param [string] permission
   *
   * @return {Promis<object>} The verification result.
   */
-  public verifyJwt(jwt: string, id: string): Promise<object> {
+  public verifyJwt(jwt: string, id: string): Promise<object>;
+  public verifyJwt(jwt: string, id: string,
+    permission: string): Promise<object>;
+  public verifyJwt(jwt: string, id: string,
+    permission?: string): Promise<object> {
     let protocol = this.getProtocolFromId(id);
-    return this.getDriver(protocol).verifyJwt(jwt, id);
+    return this.getDriver(protocol).verifyJwt(jwt, id, permission);
+  }
+
+  /*
+  * Create an authentication request.
+  *
+  * @param {string} id The identifier to be challenged.
+  *
+  * @return {Promise<object>} The challenge.
+  */
+  public createAuthRequest(id: string): object {
+    let nonce = Crypto.randomBytes(NONCE_LENGTH).toString("hex");
+    this.authChallenges.set(id, nonce, { AUTH_EXPIRY });
+    let challengePublicKey = this.challengeKey.getPublicKey("hex");
+
+    let challenge = {
+      receiver: id,
+      nonce: nonce,
+      challengePublicKey: challengePublicKey
+    }
+
+    return challenge;
+  }
+
+  /*
+  * Sign authentication request.
+  *
+  * @param {string} password The wallet password.
+  * @param {object} authRequest The authentication request.
+  *
+  * @return {Promise<string>} The response.
+  */
+  public signAuthRequest(password: string,
+    authRequest: object): Promise<string> {
+    return new Promise<string>(async (onSuccess: Function, onError: Function) => {
+      try {
+        // 1) Generate the shared secret
+        let challengePublicKey =
+          Buffer.from(authRequest["challengePublicKey"], "hex");
+        let sharedSecret =
+          this.authKey.computeSecret(challengePublicKey).toString("hex");
+
+        console.log("Shared secret:", sharedSecret);
+        // 2) Append the nonce to the shared secret
+        let challenge = sharedSecret + authRequest["nonce"];
+
+        // 3) Hash the challenge
+        let hashedChallenge = Crypto.createHash("sha256")
+          .update(challenge)
+          .digest("hex");
+
+        console.log("Created challenge:", hashedChallenge);
+
+        // 4) Assemble the response object
+        let publicKey = this.authKey.getPublicKey().toString("hex");
+
+        let response = {
+          challenge: hashedChallenge,
+          signer: authRequest["receiver"],
+          publicKey: publicKey
+        };
+
+        // 5) sign the response object
+        let protocol = this.getProtocolFromId(authRequest["receiver"]);
+
+        let signedResponse =
+          await this.createJwt(protocol, password, response, null);
+
+        onSuccess(signedResponse);
+      } catch (err) {
+        onError(err);
+      }
+    });
+  }
+
+  /*
+  * Verify an authentication response.
+  *
+  * @param {string} AuthResponse The auth response.
+  * @param {string} id The identifier.
+  *
+  * @return {Promise<object>} The verification result.
+  */
+  public verifyAuthResponse(authResponse: string): Promise<object> {
+    return new Promise<object>(async (onSuccess: Function, onError: Function) => {
+      try {
+        let decodedAuthResponse = Jwt.decode(authResponse);
+
+        let signer = decodedAuthResponse["signer"];
+        let authPublicKey = Buffer.from(decodedAuthResponse["publicKey"], "hex");
+        let signedChallenge = decodedAuthResponse["challenge"];
+
+        if (!this.authChallenges.has(signer))
+          throw new Error("Auth request does not exist.");
+
+        // 1) Get the nonce
+        let nonce = this.authChallenges.get(signer);
+        this.authChallenges.delete(signer) // Remove the challenge
+
+        // 2) Generate the shared secret
+        let sharedSecret =
+          this.challengeKey.computeSecret(authPublicKey).toString("hex");
+
+        // 2) Append the nonce to the shared secret
+        let challenge = sharedSecret + nonce;
+
+        // 3) Hash the challenge
+        let hashedChallenge = Crypto.createHash("sha256")
+          .update(challenge)
+          .digest("hex");
+
+        let verified = hashedChallenge == signedChallenge;
+
+        if (!verified)
+          throw new Error("Failed to authenticate!");
+
+        onSuccess({verified: verified, id: signer});
+
+      } catch (err) {
+        onError(err);
+      }
+    });
   }
 
   /*
@@ -193,5 +339,12 @@ export class AuthID {
 
   private getDriver(protocol: string): AuthIDDriver {
     return this.drivers[protocol.toUpperCase()];
+  }
+
+  private static generateECDH(): any {
+    let ecdh = Crypto.createECDH(DH_CURVE);
+    ecdh.generateKeys();
+
+    return ecdh;
   }
 }

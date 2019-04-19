@@ -83,20 +83,29 @@ export interface AuthIDDriver {
   * @param {string} password The wallet password.
   * @param {object} claims The claims for the jwt.
   * @param {string} expiresIn Expiry time.
+  * @param [string] permission
   *
   * @return {Promise<string>} The jwt.
   */
-  createJwt(password: string, claims: object, expiresIn: string): Promise<string>;
+  createJwt(password: string, claims: object,
+    expiresIn: string): Promise<string>;
+  createJwt(password: string, claims: object,
+    expiresIn: string, permission: string): Promise<string>;
+  createJwt(password: string, claims: object,
+    expiresIn: string, permission?: string): Promise<string>;
 
   /*
   * Verify a jwt.
   *
   * @param {string} jwt The json web token.
   * @param {string} id The id that signed the jwt.
+  * @param [string] permission
   *
-  * @return {Promis<object>} The verification result.
+  * @return {Promise<object>} The verification result.
   */
   verifyJwt(jwt: string, id: string): Promise<object>;
+  verifyJwt(jwt: string, id: string, permission: string): Promise<object>;
+  verifyJwt(jwt: string, id: string, permission?: string): Promise<object>;
 
   /*
   * Get some general info.
