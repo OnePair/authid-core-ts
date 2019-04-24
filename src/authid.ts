@@ -266,18 +266,21 @@ export class AuthID {
         if (!this.authChallenges.has(signer))
           throw new Error("Auth request does not exist.");
 
-        // 1) Get the nonce
+        // 1) Verify the JWT
+        await this.verifyJwt(authResponse, signer, "auth");
+
+        // 2) Get the nonce
         let nonce = this.authChallenges.get(signer);
         this.authChallenges.delete(signer) // Remove the challenge
 
-        // 2) Generate the shared secret
+        // 3) Generate the shared secret
         let sharedSecret =
           this.challengeKey.computeSecret(authPublicKey).toString("hex");
 
-        // 2) Append the nonce to the shared secret
+        // 4) Append the nonce to the shared secret
         let challenge = sharedSecret + nonce;
 
-        // 3) Hash the challenge
+        // 5) Hash the challenge
         let hashedChallenge = Crypto.createHash("sha256")
           .update(challenge)
           .digest("hex");

@@ -231,31 +231,40 @@ var AuthID = /** @class */ (function () {
     AuthID.prototype.verifyAuthResponse = function (authResponse) {
         var _this = this;
         return new Promise(function (onSuccess, onError) { return __awaiter(_this, void 0, void 0, function () {
-            var decodedAuthResponse, signer, authPublicKey, signedChallenge, nonce, sharedSecret, challenge, hashedChallenge, verified;
+            var decodedAuthResponse, signer, authPublicKey, signedChallenge, nonce, sharedSecret, challenge, hashedChallenge, verified, err_2;
             return __generator(this, function (_a) {
-                try {
-                    decodedAuthResponse = jsonwebtoken_1.default.decode(authResponse);
-                    signer = decodedAuthResponse["signer"];
-                    authPublicKey = Buffer.from(decodedAuthResponse["publicKey"], "hex");
-                    signedChallenge = decodedAuthResponse["challenge"];
-                    if (!this.authChallenges.has(signer))
-                        throw new Error("Auth request does not exist.");
-                    nonce = this.authChallenges.get(signer);
-                    this.authChallenges.delete(signer); // Remove the challenge
-                    sharedSecret = this.challengeKey.computeSecret(authPublicKey).toString("hex");
-                    challenge = sharedSecret + nonce;
-                    hashedChallenge = crypto_1.default.createHash("sha256")
-                        .update(challenge)
-                        .digest("hex");
-                    verified = hashedChallenge == signedChallenge;
-                    if (!verified)
-                        throw new Error("Failed to authenticate!");
-                    onSuccess({ verified: verified, id: signer });
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        decodedAuthResponse = jsonwebtoken_1.default.decode(authResponse);
+                        signer = decodedAuthResponse["signer"];
+                        authPublicKey = Buffer.from(decodedAuthResponse["publicKey"], "hex");
+                        signedChallenge = decodedAuthResponse["challenge"];
+                        if (!this.authChallenges.has(signer))
+                            throw new Error("Auth request does not exist.");
+                        // 1) Verify the JWT
+                        return [4 /*yield*/, this.verifyJwt(authResponse, signer, "auth")];
+                    case 1:
+                        // 1) Verify the JWT
+                        _a.sent();
+                        nonce = this.authChallenges.get(signer);
+                        this.authChallenges.delete(signer); // Remove the challenge
+                        sharedSecret = this.challengeKey.computeSecret(authPublicKey).toString("hex");
+                        challenge = sharedSecret + nonce;
+                        hashedChallenge = crypto_1.default.createHash("sha256")
+                            .update(challenge)
+                            .digest("hex");
+                        verified = hashedChallenge == signedChallenge;
+                        if (!verified)
+                            throw new Error("Failed to authenticate!");
+                        onSuccess({ verified: verified, id: signer });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        err_2 = _a.sent();
+                        onError(err_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
-                catch (err) {
-                    onError(err);
-                }
-                return [2 /*return*/];
             });
         }); });
     };
